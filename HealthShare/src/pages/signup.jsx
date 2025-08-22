@@ -1,60 +1,69 @@
+
 import React, { useState } from 'react';
 import { Form, Button, ToggleButton, ButtonGroup, Container } from 'react-bootstrap';
 import { Eye, EyeSlash } from 'react-bootstrap-icons';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "../firebase";   // ✅ fixed import
+import { auth, db } from "../firebase";
+import { useNavigate } from "react-router-dom";   // ✅ needed for navigation
 
 function Signup() {
   const [passwordShown, setPasswordShown] = useState(false);
   const [confirmPasswordShown, setConfirmPasswordShown] = useState(false);
   const [role, setRole] = useState('patient');
   const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (form.password !== form.confirmPassword) {
-    alert("Passwords do not match!");
-    return;
-  }
+    if (form.password !== form.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
 
-  try {
-    // Create user with Firebase Auth
-    const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
-    const user = userCredential.user;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
+      const user = userCredential.user;
 
-    // 1️⃣ Add full user info into USERS collection
-    await setDoc(doc(db, "users", user.uid), {
-      username: form.username,
-      email: form.email,
-      role: role,
-      createdAt: new Date(),
-    });
+      await setDoc(doc(db, "users", user.uid), {
+        username: form.username,
+        email: form.email,
+        role: role,
+        createdAt: new Date(),
+      });
 
-    // 2️⃣ Add EMPTY doc into doctors/patients collection
-    const roleCollection = role === "patient" ? "patients" : "doctors";
-    await setDoc(doc(db, roleCollection, user.uid), {}); // 👈 empty document
+      const roleCollection = role === "patient" ? "patients" : "doctors";
+      await setDoc(doc(db, roleCollection, user.uid), {}); // empty doc
 
-    alert(`Signup successful! User added to "users" and empty doc created in "${roleCollection}".`);
-  } catch (error) {
-    console.error("Error signing up:", error);
-    alert(error.message);
-  }
-};
-
+      alert(`Signup successful! User added to "users" and empty doc created in "${roleCollection}".`);
+      navigate("/"); // ✅ redirect to login
+    } catch (error) {
+      console.error("Error signing up:", error);
+      alert(error.message);
+    }
+  };
 
   return (
-    <Container className="mt-5">
-      <div style={{ width: '25rem' }}>
-        <h3 className="mb-3">Signup</h3>
+    <Container className="d-flex justify-content-center align-items-center mt-5">
+      <div
+        style={{
+          width: "25rem",
+          padding: "2rem",
+          border: "1px solid #ccc",   // ✅ border like login page
+          borderRadius: "8px",
+          backgroundColor: "white",
+          boxShadow: "none"
+        }}
+      >
+        <h3 className="mb-3 text-center">Signup</h3>
 
         {/* Role Toggle */}
-        <div className="mb-4">
+        <div className="mb-4 text-center">
           <ButtonGroup>
             <ToggleButton
               id="toggle-patient"
@@ -81,7 +90,8 @@ const handleSubmit = async (e) => {
           </ButtonGroup>
         </div>
 
-        <Form onSubmit={handleSubmit}>
+        {/* Signup Form */}
+        <Form onSubmit={handleSubmit} style={{ boxShadow: "none" }}>
           {/* Username */}
           <Form.Group className="mb-3 text-start" controlId="formUsername">
             <Form.Label>Username</Form.Label>
@@ -92,6 +102,7 @@ const handleSubmit = async (e) => {
               value={form.username}
               onChange={handleChange}
               required
+              style={{ boxShadow: "none" }}
             />
           </Form.Group>
 
@@ -105,6 +116,7 @@ const handleSubmit = async (e) => {
               value={form.email}
               onChange={handleChange}
               required
+              style={{ boxShadow: "none" }}
             />
           </Form.Group>
 
@@ -119,12 +131,13 @@ const handleSubmit = async (e) => {
                 value={form.password}
                 onChange={handleChange}
                 required
+                style={{ boxShadow: "none" }}
               />
               <Button
                 variant="link"
                 onClick={() => setPasswordShown(!passwordShown)}
                 className="ms-2 p-0"
-                style={{ height: '38px' }}
+                style={{ height: '38px', boxShadow: "none" }}
               >
                 {passwordShown ? <EyeSlash size={20} /> : <Eye size={20} />}
               </Button>
@@ -142,23 +155,41 @@ const handleSubmit = async (e) => {
                 value={form.confirmPassword}
                 onChange={handleChange}
                 required
+                style={{ boxShadow: "none" }}
               />
               <Button
                 variant="link"
                 onClick={() => setConfirmPasswordShown(!confirmPasswordShown)}
                 className="ms-2 p-0"
-                style={{ height: '38px' }}
+                style={{ height: '38px', boxShadow: "none" }}
               >
                 {confirmPasswordShown ? <EyeSlash size={20} /> : <Eye size={20} />}
               </Button>
             </div>
           </Form.Group>
 
-          {/* Submit Button */}
-          <Button variant="primary" type="submit" className="w-100 rounded" style={{ height: '40px' }}>
+          {/* Submit */}
+          <Button
+            variant="primary"
+            type="submit"
+            className="w-100 rounded"
+            style={{ height: '40px', boxShadow: "none" }}
+          >
             Signup
           </Button>
         </Form>
+
+        {/* Already have account */}
+        <div className="text-center mt-3">
+          <span>Already have an account? </span>
+          <Button
+            variant="link"
+            className="p-0 fw-semibold"
+            onClick={() => navigate("/")}
+          >
+            Login
+          </Button>
+        </div>
       </div>
     </Container>
   );

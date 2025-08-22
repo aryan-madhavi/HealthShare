@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Form, Button, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -49,8 +50,19 @@ function Login() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-      <Card className="p-4 shadow-lg" style={{ width: "25rem", borderRadius: "1rem" }}>
+    <div className="d-flex justify-content-center align-items-center vh-100 bg-white">
+      <Card
+        className="p-4"
+        style={{
+          width: "25rem",
+          borderRadius: "1rem",
+          border: "1px solid #ccc",   // ✅ light grey border
+          boxShadow: "none",          // ✅ no shadow
+          WebkitBoxShadow: "none",
+          MozBoxShadow: "none",
+          backgroundColor: "#fff"     // ✅ solid white
+        }}
+      >
         <Card.Body>
           <h3 className="text-center mb-4">Login</h3>
 
@@ -63,7 +75,7 @@ function Login() {
                 value={form.userInput}
                 onChange={handleChange}
                 placeholder="Enter email or username"
-                className="rounded p-2 border border-2 border-primary shadow-sm focus-ring"
+                className="rounded p-2 border border-2" // ✅ neutral border
               />
             </Form.Group>
 
@@ -75,7 +87,7 @@ function Login() {
                 value={form.password}
                 onChange={handleChange}
                 placeholder="Enter password"
-                className="rounded p-2 border border-2 border-primary shadow-sm"
+                className="rounded p-2 border border-2" // ✅ neutral border
               />
             </Form.Group>
 
@@ -108,3 +120,4 @@ function Login() {
 }
 
 export default Login;
+
