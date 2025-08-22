@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { Nav, Navbar, Offcanvas } from "react-bootstrap";
+import { Nav, Navbar, Offcanvas, Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { GiHamburgerMenu } from "react-icons/gi";  // <-- import added
+import logo from "../assets/logo.png";
 
 function TopNavbar({ role }) {
   const [show, setShow] = useState(false);
@@ -98,7 +100,7 @@ function TopNavbar({ role }) {
             <Nav.Link
               as={Link}
               to="/"
-              className="text-white py-3 px-4 border-bottom border-secondary"
+              className="text-white"
               onClick={() => setShow(false)}
             >
               Logout

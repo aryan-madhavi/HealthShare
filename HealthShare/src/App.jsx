@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout"
 import Documents from "./pages/Document"
 import Profile from "./pages/Profile"
-import ActiveLinks from "./pages/ActiveLink"
+import ActiveLinks from "./pages/ActiveLinks"
 import Login from "./pages/login"
 import Signup from "./pages/signup"
 import DoctorInviteShare from "./pages/Doctor"
