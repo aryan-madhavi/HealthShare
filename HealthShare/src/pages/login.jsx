@@ -50,7 +50,7 @@ function Login() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-white">
+    <div className="d-flex justify-content-center align-items-center vh-100">
       <Card
         className="p-4"
         style={{
