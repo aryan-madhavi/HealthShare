@@ -1,32 +1,6 @@
-// import { Outlet, useLocation } from "react-router-dom";
-// import Sidebar from "./SideBar"; 
-
-// function Layout() {
-//   const location = useLocation();
-
-//   // Pages where sidebar should not show
-//   const hideSidebarRoutes = ["/login", "/signup"];
-
-//   const shouldHideSidebar = hideSidebarRoutes.includes(location.pathname);
-
-//   return (
-//     <div className="d-flex">
-//       {/* Sidebar only if not login/signup */}
-//       {!shouldHideSidebar && <Sidebar />}
-
-//       {/* Main content */}
-//       <div className="flex-grow-1 overflow-hidden">
-//         <Outlet /> {/* This renders child routes */}
-//       </div>
-
-//     </div>
-//   );
-// }
-
-// export default Layout;
 
 import { Outlet, useLocation, Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Nav, Navbar, Offcanvas } from "react-bootstrap";
 import Sidebar from "./SideBar";
 
@@ -38,19 +12,26 @@ function Layout() {
   const hideSidebarRoutes = ["/login", "/signup"];
   const shouldHideSidebar = hideSidebarRoutes.includes(location.pathname);
 
+  // Prevent body scrolling
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.documentElement.style.overflow = 'unset';
+    };
+  }, []);
+
   return (
-    <>
+    <div className="d-flex flex-column vh-100 overflow-hidden">
       {/* ===== Navbar ===== */}
       <Navbar
-  expand="lg"
-  fixed="top"
-  className="px-3 shadow"
-  style={{ backgroundColor: "#281e68c2" }}  
->
-
-
-
-        <Navbar.Brand as={Link} to="/" className="fw-bold">
+        expand="lg"
+        className="px-3 shadow flex-shrink-0"
+        style={{ backgroundColor: "#281e68c2" }}  
+      >
+        <Navbar.Brand as={Link} to="/" className="fw-bold text-white">
           HealthShare
         </Navbar.Brand>
 
@@ -92,7 +73,7 @@ function Layout() {
             <Nav.Link
               as={Link}
               to="/activelinks"
-              className="text-white py-3 px-4"
+              className="text-white py-3 px-4 border-bottom border-secondary"
               onClick={() => setShow(false)}
             >
               Active Links
@@ -100,7 +81,7 @@ function Layout() {
             <Nav.Link
               as={Link}
               to="/profile"
-              className="text-white py-3 px-4 border-bottom border-secondary"
+              className="text-white py-3 px-4"
               onClick={() => setShow(false)}
             >
               Profile
@@ -109,17 +90,31 @@ function Layout() {
         </Offcanvas.Body>
       </Offcanvas>
 
-      {/* ===== Content wrapper (pushes below navbar) ===== */}
-      <div style={{ marginTop: "80px" }} className="d-flex">
+      {/* ===== Content wrapper ===== */}
+      <div className="d-flex flex-grow-1 overflow-hidden">
         {/* Sidebar only if not login/signup */}
-        {!shouldHideSidebar && <Sidebar />}
+        {!shouldHideSidebar && (
+          <div className="flex-shrink-0">
+            <Sidebar />
+          </div>
+        )}
 
         {/* Main content */}
-        <div className="flex-grow-1 overflow-hidden p-3">
-          <Outlet />
+        <div 
+          className="flex-grow-1 p-3"
+          style={{
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            maxHeight: '100%',
+            scrollBehavior: 'smooth'
+          }}
+        >
+          <div style={{ minHeight: 'fit-content' }}>
+            <Outlet />
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

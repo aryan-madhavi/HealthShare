@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Button, ToggleButton, ButtonGroup, Container } from 'react-bootstrap';
 import { Eye, EyeSlash } from 'react-bootstrap-icons';
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 
@@ -12,13 +12,14 @@ function Signup() {
   const [role, setRole] = useState('patient');
   const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' });
   const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   // Auto redirect to login after showing error message
   useEffect(() => {
     if (errorMessage === 'User already exists') {
       const timer = setTimeout(() => {
-        navigate("/");
+        navigate("/login");
       }, 2000);
 
       return () => clearTimeout(timer);
@@ -35,17 +36,38 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (isSubmitting) return; // prevent double click
+    setIsSubmitting(true);
+
     if (form.password !== form.confirmPassword) {
       setErrorMessage("Passwords do not match!");
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      // ✅ Create user in Firebase Auth
+      // 🔍 Check if username or email already exists in Firestore
+      const usersRef = collection(db, "users");
+
+      const q1 = query(usersRef, where("username", "==", form.username));
+      const q2 = query(usersRef, where("email", "==", form.email));
+
+      const [usernameSnapshot, emailSnapshot] = await Promise.all([
+        getDocs(q1),
+        getDocs(q2),
+      ]);
+
+      if (!usernameSnapshot.empty || !emailSnapshot.empty) {
+        setErrorMessage("User already exists");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // ✅ Create Firebase Auth user
       const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
       const user = userCredential.user;
 
-      // ✅ Save user data in "users" collection
+      // Save user in "users" collection
       await setDoc(doc(db, "users", user.uid), {
         username: form.username,
         email: form.email,
@@ -53,26 +75,22 @@ function Signup() {
         createdAt: serverTimestamp(),
       });
 
-      // ✅ Also store in role-based collection
+      // Create empty role doc
       const roleCollection = role === "patient" ? "patients" : "doctors";
-      await setDoc(doc(db, roleCollection, user.uid), {
-        uid: user.uid,
-        username: form.username,
-        email: form.email,
-        role: role,
-        createdAt: serverTimestamp(),
-      });
+      await setDoc(doc(db, roleCollection, user.uid), {});
 
-      // ✅ Redirect to login page
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       console.error("Error signing up:", error);
 
-      if (error.code === 'auth/email-already-in-use') {
-        setErrorMessage('User already exists');
+      if (error.code === "auth/email-already-in-use") {
+        setErrorMessage("User already exists");
+        navigate("/login");
       } else {
         setErrorMessage(error.message);
       }
+
+      setIsSubmitting(false); // re-enable button on error
     }
   };
 
@@ -215,9 +233,9 @@ function Signup() {
             variant="primary"
             type="submit"
             className="w-100 rounded"
-            style={{ height: '40px', boxShadow: "none" }}
+            disabled={isSubmitting}   // disable when submitting
           >
-            Signup
+            {isSubmitting ? "Signing up..." : "Signup"}
           </Button>
         </Form>
 
@@ -227,7 +245,7 @@ function Signup() {
           <Button
             variant="link"
             className="p-0 fw-semibold"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/login")}
           >
             Login
           </Button>

@@ -19,7 +19,7 @@ import { Upload, FileText, Image, CheckCircle } from "lucide-react";
 import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { updateDoc, arrayUnion } from "firebase/firestore";
 import { Timestamp } from "firebase/firestore";
 import { getPatientData } from "../HelperFuctions/GetAllPatientLinks";
@@ -136,7 +136,6 @@ function Documents() {
                 uploadedAt: Timestamp.now(),
               })
             });
-
             setIsUploading(false);
             alert("Upload successful!");
           } catch (err) {
