@@ -58,7 +58,7 @@ function Home() {
 
 function Profile() {
   return (
-    <><Profile/>
+    <></>
   );
 }
 
