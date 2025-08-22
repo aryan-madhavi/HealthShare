@@ -15,7 +15,7 @@ import {
   EmailIcon,
 } from "react-share";
 
-function ActiveLinks() {
+function UploadDocuments() {
     const auth = getAuth();
     const db = getFirestore();
     const functions = getFunctions(); // initialize cloud functions
@@ -232,4 +232,4 @@ function ActiveLinks() {
     );
 }
 
-export default ActiveLinks;
+export default UploadDocuments;

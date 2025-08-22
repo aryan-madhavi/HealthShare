@@ -13,11 +13,7 @@
     "@popperjs/core": "^2.11.8",
     "axios": "^1.11.0",
     "bootstrap": "^5.3.7",
-<<<<<<< HEAD
-    "chart.js": "^4.5.0",
-=======
     "bootstrap-icons": "^1.13.1",
->>>>>>> 1fb2506d340425a1f88adf20c1b7760be8c9520b
     "firebase": "^12.1.0",
     "lucide-react": "^0.540.0",
     "node-url-shortener": "^2.0.3",

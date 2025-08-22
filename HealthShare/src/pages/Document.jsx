@@ -21,18 +21,20 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getPatientData } from "../HelperFuctions/GetAllPatientLinks";
 import { getFirestore, doc, updateDoc, arrayUnion, Timestamp } from "firebase/firestore";
+import ActiveLinks from "../components/UploadDocument";
+import UploadDocuments from "../components/UploadDocument";
 
 
 async function shortenWithTinyURL(longUrl) {
   const response = await axios.get(
     `https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`
   );
-  return response.data; // ✅ returns short URL
+  return response.data; 
 }
 
 
 function Documents() {
-  const navigate = useNavigate(); // ✅ top level, inside component
+  const navigate = useNavigate(); 
   const auth = getAuth();
   const uid = auth.currentUser?.uid;
   const db = getFirestore();
@@ -318,7 +320,10 @@ function Documents() {
       </Container>
 
       {/* Uploaded Documents */}
-      <Card className="mb-4 mx-4 shadow-sm">
+
+      <UploadDocuments/>
+
+      {/* <Card className="mb-4 mx-4 shadow-sm">
         <Card.Header>
           <h5 className="mb-0">Uploaded Documents</h5>
         </Card.Header>
@@ -355,12 +360,12 @@ function Documents() {
                       </a>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </Card.Body>
-      </Card>
+                ))} */}
+              {/* </tbody> */}
+            {/* </Table> */}
+          {/* )} */}
+        {/* </Card.Body> */}
+      {/* </Card> */}
     </>
   );
 }
