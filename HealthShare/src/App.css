@@ -1,9 +1,22 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
+  max-width: 100%;
+  /* margin: 0 auto; */
   padding: 2rem;
   text-align: center;
+  width: 100%;
 }
+
+html, body, #root {
+  height: 100%;     /* makes the whole page fill the viewport */
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
 
 .logo {
   height: 6em;
