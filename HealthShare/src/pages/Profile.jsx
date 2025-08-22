@@ -22,9 +22,10 @@ function Profile() {
       try {
         const docSnap = await getDoc(patientDocRef);
         if (docSnap.exists()) {
+          console.log("Patient data:", docSnap.data()); 
           const data = docSnap.data();
           setFiles(data.files || []);              // ✅ consistent with schema
-          setActiveLinks(data.activeLinks || []);
+          setActiveLinks(data.activated || []);
         }
       } catch (err) {
         console.error("Error fetching patient data:", err);
