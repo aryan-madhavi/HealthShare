@@ -11,12 +11,11 @@
   "engines": {
     "node": "22"
   },
-  "main": "mergePdf&getSignedUrl.js",
+  "main": "generateInvite.js",
   "dependencies": {
     "axios": "^1.11.0",
     "firebase-admin": "^13.4.0",
     "firebase-functions": "^6.4.0",
-    "pdf-lib": "^1.17.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
