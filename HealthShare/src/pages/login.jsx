@@ -40,7 +40,7 @@ function Login() {
       console.log("Logged in:", user.uid);
 
       // Redirect to dashboard
-      navigate("/home");
+      navigate("/document");
     } catch (error) {
       console.error("Login error:", error.message);
       alert(error.message);

@@ -1,29 +1,68 @@
-import { Form, Button, Container, Row, Col, Card, ProgressBar } from "react-bootstrap";
-import { useState } from "react";
+import { Form, Button, Container, Row, Col, Card, ProgressBar, Table, Badge } from "react-bootstrap";
+import { useEffect, useState } from "react";
 import { storage } from "../firebase";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytesResumable } from "firebase/storage";
 import { convertImageToPdf } from "../HelperFuctions/ConvertImagetoPdf";
 import { compressPdf } from "../HelperFuctions/CompressPdf";
 import { QRCodeSVG } from "qrcode.react";
 import { Upload, FileText, Image, CheckCircle } from "lucide-react";
-import { getFunctions, httpsCallable } from "firebase/functions";
 import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { updateDoc, arrayUnion } from "firebase/firestore";
 
 function Documents() {
   const navigate = useNavigate();   // ✅ top level, inside component
   const auth = getAuth();
   const uid = auth.currentUser?.uid;
+  const db = getFirestore();
 
   const [url, setUrl] = useState("");
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  const [activeLinks, setActiveLinks] = useState([]);
+
   function removeExtension(filename) {
     return filename.replace(/\.[^/.]+$/, "");
+  };
+
+  const [uploadedDocs, setUploadedDocs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPatientData = async () => {
+      if (!auth.currentUser) return;
+
+      const uid = auth.currentUser.uid;
+      const patientDocRef = doc(db, "patients", uid);
+
+      try {
+        const docSnap = await getDoc(patientDocRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setUploadedDocs(data.files || []);   // 👈 use files instead of uploadedDocs
+          setActiveLinks(data.activeLinks || []);
+        }
+
+      } catch (err) {
+        console.error("Error fetching patient data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPatientData();
+  }, [auth]);
+
+  if (loading) {
+    return (
+      <Container className="mt-5 text-center">
+        <h4>Loading profile...</h4>
+      </Container>
+    );
   }
 
   const handleFileChange = (e) => {
@@ -59,15 +98,14 @@ function Documents() {
         return;
       }
 
-
       if (file.type.startsWith("image/")) {
         fileToUpload = await convertImageToPdf(file);
       }
 
-        fileToUpload = await compressPdf(file);
+      fileToUpload = await compressPdf(fileToUpload);
 
       const baseName = removeExtension(fileToUpload.name);
-      const filePath = `${uid}/${baseName}-${Date.now()}`; // File path format: <uid>/<filename>-<timestamp>
+      const filePath = `${uid}/${baseName}-${Date.now()}`; // <uid>/<filename>-<timestamp>
       const storageRef = ref(storage, filePath);
 
       const uploadTask = uploadBytesResumable(storageRef, fileToUpload);
@@ -84,17 +122,35 @@ function Documents() {
           setIsUploading(false);
         },
         async () => {
-          const filePath = uploadTask.snapshot.ref.fullPath; // e.g. uploads/report-12345.pdf
-          const response = await axios.get(
-            //"https://us-central1-healthshare-274f9.cloudfunctions.net/getSignedUrl",
-            "https://getsignedurl-y3rvr64ywq-uc.a.run.app",
-            {
-              params: { filePath }, // ✅ axios will append ?filePath=...
-            }
-          );
+          try {
+            const filePath = uploadTask.snapshot.ref.fullPath;
 
-          setUrl(response.data.url);
-          setIsUploading(false);
+            // Get signed URL from Cloud Function
+            const response = await axios.get(
+              "https://getsignedurl-y3rvr64ywq-uc.a.run.app",
+              { params: { filePath } }
+            );
+
+            const fileUrl = response.data.url;
+            setUrl(fileUrl);
+
+            // ✅ Update Firestore
+            const userDocRef = doc(db, "patients", uid);
+
+            await updateDoc(userDocRef, {
+              files: arrayUnion({
+                name: baseName,
+                url: fileUrl,
+                uploadedAt: new Date(),
+              }),
+            });
+
+            setIsUploading(false);
+          } catch (err) {
+            console.error("Firestore update failed", err);
+            alert("Upload successful, but Firestore update failed!");
+            setIsUploading(false);
+          }
         }
       );
     } catch (error) {
@@ -105,42 +161,36 @@ function Documents() {
   };
 
 
-    return (
-        <div
-            className="w-100 d-flex flex-column"
-            style={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-            }}
-        >
-            {/* Hero Section */}
-            <Container fluid className="p-0">
-                <Row className="justify-content-center text-center text-white py-5">
-                    <Col lg={8}>
-                        <div className="mb-4">
-                            <Upload size={64} className="mb-3 opacity-90" />
-                        </div>
-                        <h1 className="display-4 fw-bold mb-4">Upload Your Files</h1>
-                        <p className="lead mb-4 opacity-90">
-                            Upload your images and PDFs instantly. Get shareable QR codes for easy access anywhere.
-                        </p>
-                        <div className="d-flex justify-content-center gap-4 mb-5">
-                            <div className="d-flex align-items-center gap-2">
-                                <Image size={20} />
-                                <span>Images to PDF</span>
-                            </div>
-                            <div className="d-flex align-items-center gap-2">
-                                <FileText size={20} />
-                                <span>PDF Support</span>
-                            </div>
-                            <div className="d-flex align-items-center gap-2">
-                                <CheckCircle size={20} />
-                                <span>QR Code Generation</span>
-                            </div>
-                        </div>
-                    </Col>
-                </Row>
-            </Container>
+  return (
+    <>
+      {/* Hero Section */}
+      <Container fluid className="p-0">
+        <Row className="justify-content-center text-center text-white py-5">
+          <Col lg={8}>
+            <div className="mb-4">
+              <Upload size={64} className="mb-3 opacity-90" />
+            </div>
+            <h1 className="display-4 fw-bold mb-4">Upload Your Files</h1>
+            <p className="lead mb-4 opacity-90">
+              Upload your images and PDFs instantly. Get shareable QR codes for easy access anywhere.
+            </p>
+            <div className="d-flex justify-content-center gap-4 mb-5">
+              <div className="d-flex align-items-center gap-2">
+                <Image size={20} />
+                <span>Images to PDF</span>
+              </div>
+              <div className="d-flex align-items-center gap-2">
+                <FileText size={20} />
+                <span>PDF Support</span>
+              </div>
+              <div className="d-flex align-items-center gap-2">
+                <CheckCircle size={20} />
+                <span>QR Code Generation</span>
+              </div>
+            </div>
+          </Col>
+        </Row>
+      </Container>
 
       {/* Upload Section */}
       <Container fluid className="flex-grow-1 d-flex align-items-center justify-content-center">
@@ -269,7 +319,47 @@ function Documents() {
           </Col>
         </Row>
       </Container>
-    </div>
+
+      {/* Uploaded Documents */}
+      <Card className="mb-4 mx-4 shadow-sm">
+        <Card.Header>
+          <h5 className="mb-0">Uploaded Documents</h5>
+        </Card.Header>
+        <Card.Body>
+          {uploadedDocs.length === 0 ? (
+            <p className="text-muted">No documents uploaded yet.</p>
+          ) : (
+            <Table striped bordered hover responsive>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Uploaded At</th>
+                </tr>
+              </thead>
+              <tbody>
+                {uploadedDocs?.map((fileItem, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{fileItem.name}</td>
+                    <td>
+                      {fileItem.uploadedAt?.toDate
+                        ? fileItem.uploadedAt.toDate().toLocaleString()
+                        : ""}
+                    </td>
+                    <td>
+                      <a href={fileItem.url} target="_blank" rel="noopener noreferrer">
+                        View File
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Card.Body>
+      </Card>
+    </>
   );
 }
 

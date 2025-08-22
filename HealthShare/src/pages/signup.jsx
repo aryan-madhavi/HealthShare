@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Form, Button, ToggleButton, ButtonGroup, Container } from 'react-bootstrap';
 import { Eye, EyeSlash } from 'react-bootstrap-icons';
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 
@@ -20,7 +19,7 @@ function Signup() {
     if (errorMessage === 'User already exists') {
       const timer = setTimeout(() => {
         navigate("/");
-      }, 2000); // Redirect after 2 seconds
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
@@ -28,7 +27,6 @@ function Signup() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    // Clear error message when user starts typing
     if (errorMessage) {
       setErrorMessage('');
     }
@@ -43,25 +41,33 @@ function Signup() {
     }
 
     try {
+      // ✅ Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
       const user = userCredential.user;
 
+      // ✅ Save user data in "users" collection
       await setDoc(doc(db, "users", user.uid), {
         username: form.username,
         email: form.email,
         role: role,
-        createdAt: new Date(),
+        createdAt: serverTimestamp(),
       });
 
+      // ✅ Also store in role-based collection
       const roleCollection = role === "patient" ? "patients" : "doctors";
-      await setDoc(doc(db, roleCollection, user.uid), {}); // empty doc
+      await setDoc(doc(db, roleCollection, user.uid), {
+        uid: user.uid,
+        username: form.username,
+        email: form.email,
+        role: role,
+        createdAt: serverTimestamp(),
+      });
 
-      // Success - new user created, redirect to login
+      // ✅ Redirect to login page
       navigate("/");
     } catch (error) {
       console.error("Error signing up:", error);
-      
-      // Handle specific Firebase auth errors
+
       if (error.code === 'auth/email-already-in-use') {
         setErrorMessage('User already exists');
       } else {
