@@ -192,11 +192,8 @@ function Signup() {
 
           {/* Error Message */}
           {errorMessage && (
-            <div className="mb-3 text-center">
-              <small 
-                className={`text-${errorMessage === 'User already exists' ? 'danger' : 'danger'}`}
-                style={{ fontSize: '0.875rem' }}
-              >
+            <div className="mb-3 text-center text-danger">
+              <small>
                 {errorMessage}
                 {errorMessage === 'User already exists' && (
                   <span className="d-block mt-1" style={{ fontSize: '0.75rem' }}>
