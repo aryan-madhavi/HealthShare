@@ -1,4 +1,4 @@
-// App.jsx
+import './App.css'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout"
 import Documents from "./pages/Document"
