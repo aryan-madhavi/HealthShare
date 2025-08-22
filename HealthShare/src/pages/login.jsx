@@ -3,7 +3,7 @@ import { Form, Button, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase"; 
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, getDoc, doc } from "firebase/firestore";
 
 function Login() {
   const navigate = useNavigate();
@@ -36,10 +36,20 @@ function Login() {
       const userCredential = await signInWithEmailAndPassword(auth, email, form.password);
       const user = userCredential.user;
 
-      console.log("Logged in:", user.uid);
+      const docSnap = await getDoc(doc(db, "users", user.uid));
 
-      // Redirect to dashboard
-      navigate("/document");
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        console.log("User data:", userData);
+
+        if (userData.role === "patient") {
+          navigate("/document");
+        } else {
+          navigate("/doctor");
+        }
+      } else {
+        throw new Error("No user profile found in Firestore.");
+      }
     } catch (error) {
       console.error("Login error:", error.message);
       alert(error.message);

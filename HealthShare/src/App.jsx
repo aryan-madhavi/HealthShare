@@ -6,6 +6,7 @@ import Profile from "./pages/Profile"
 import ActiveLinks from "./pages/ActiveLink"
 import Login from "./pages/login"
 import Signup from "./pages/signup"
+import DoctorInviteShare from "./pages/Doctor"
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/document" element={<Documents />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/activelinks" element={<ActiveLinks />} />
+          <Route path="/doctor" element={<DoctorInviteShare />} />
         </Route>
 
         {/* Routes without Sidebar */}
