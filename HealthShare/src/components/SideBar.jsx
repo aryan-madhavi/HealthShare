@@ -60,8 +60,8 @@ function Home() {
 function Profile() {
   return (
     <div className="page-content">
-      <h1>Profile Page</h1>
-      <p>This is the profile page content.</p>
+      {/* <h1>Profile Page</h1>
+      <p>This is the profile page content.</p> */}
     </div>
   );
 }
@@ -69,7 +69,7 @@ function Profile() {
 function Document() {
   return (
     <div className="page-content">
-      <h1>Documents Page</h1>
+      {/* <h1>Documents Page</h1> */}
     </div>
   );
 }
@@ -77,7 +77,7 @@ function Document() {
 function ActiveLinks() {
   return (
     <div className="page-content">
-      <h1>Active Links</h1>
+      {/* <h1>Active Links</h1> */}
     </div>
   );
 }
@@ -85,7 +85,7 @@ function ActiveLinks() {
 function Contact() {
   return (
     <div className="page-content">
-      <h1>Contact Page</h1>
+      {/* <h1>Contact Page</h1> */}
     </div>
   );
 }

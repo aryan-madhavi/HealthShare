@@ -1,4 +1,14 @@
-import { Form, Button, Container, Row, Col, Card, ProgressBar, Table, Badge } from "react-bootstrap";
+import {
+  Form,
+  Button,
+  Container,
+  Row,
+  Col,
+  Card,
+  ProgressBar,
+  Table,
+  Badge,
+} from "react-bootstrap";
 import { useEffect, useState } from "react";
 import { storage } from "../firebase";
 import { ref, uploadBytesResumable } from "firebase/storage";
@@ -11,9 +21,19 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { updateDoc, arrayUnion } from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
+import { getPatientData } from "../HelperFuctions/GetAllPatientLinks";
+
+async function shortenWithTinyURL(longUrl) {
+  const response = await axios.get(
+    `https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`
+  );
+  return response.data; // ✅ returns short URL
+}
+
 
 function Documents() {
-  const navigate = useNavigate();   // ✅ top level, inside component
+  const navigate = useNavigate(); // ✅ top level, inside component
   const auth = getAuth();
   const uid = auth.currentUser?.uid;
   const db = getFirestore();
@@ -27,43 +47,26 @@ function Documents() {
 
   function removeExtension(filename) {
     return filename.replace(/\.[^/.]+$/, "");
-  };
+  }
 
   const [uploadedDocs, setUploadedDocs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPatientData = async () => {
+    const fetchData = async () => {
       if (!auth.currentUser) return;
 
       const uid = auth.currentUser.uid;
-      const patientDocRef = doc(db, "patients", uid);
-
-      try {
-        const docSnap = await getDoc(patientDocRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setUploadedDocs(data.files || []);   // 👈 use files instead of uploadedDocs
-          setActiveLinks(data.activeLinks || []);
-        }
-
-      } catch (err) {
-        console.error("Error fetching patient data:", err);
-      } finally {
-        setLoading(false);
+      const data = await getPatientData(uid);
+      if (data) {
+        setUploadedDocs(data.files || []);
+        setActiveLinks(data.activeLinks || []);
       }
+      setLoading(false);
     };
 
-    fetchPatientData();
+    fetchData();
   }, [auth]);
-
-  if (loading) {
-    return (
-      <Container className="mt-5 text-center">
-        <h4>Loading profile...</h4>
-      </Container>
-    );
-  }
 
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
@@ -123,29 +126,19 @@ function Documents() {
         },
         async () => {
           try {
-            const filePath = uploadTask.snapshot.ref.fullPath;
-
-            // Get signed URL from Cloud Function
-            const response = await axios.get(
-              "https://getsignedurl-y3rvr64ywq-uc.a.run.app",
-              { params: { filePath } }
-            );
-
-            const fileUrl = response.data.url;
-            setUrl(fileUrl);
-
             // ✅ Update Firestore
             const userDocRef = doc(db, "patients", uid);
 
             await updateDoc(userDocRef, {
               files: arrayUnion({
-                name: baseName,
-                url: fileUrl,
-                uploadedAt: new Date(),
-              }),
+                name: uploadTask.snapshot.metadata.name,
+                url: uploadTask.snapshot.ref.fullPath,
+                uploadedAt: Timestamp.now(),
+              })
             });
 
             setIsUploading(false);
+            alert("Upload successful!");
           } catch (err) {
             console.error("Firestore update failed", err);
             alert("Upload successful, but Firestore update failed!");
@@ -160,7 +153,6 @@ function Documents() {
     }
   };
 
-
   return (
     <>
       {/* Hero Section */}
@@ -172,7 +164,8 @@ function Documents() {
             </div>
             <h1 className="display-4 fw-bold mb-4">Upload Your Files</h1>
             <p className="lead mb-4 opacity-90">
-              Upload your images and PDFs instantly. Get shareable QR codes for easy access anywhere.
+              Upload your images and PDFs instantly. Get shareable QR codes for
+              easy access anywhere.
             </p>
             <div className="d-flex justify-content-center gap-4 mb-5">
               <div className="d-flex align-items-center gap-2">
@@ -193,7 +186,10 @@ function Documents() {
       </Container>
 
       {/* Upload Section */}
-      <Container fluid className="flex-grow-1 d-flex align-items-center justify-content-center">
+      <Container
+        fluid
+        className="flex-grow-1 d-flex align-items-center justify-content-center"
+      >
         <Row className="justify-content-center w-100">
           <Col lg={6} md={8}>
             <Card
@@ -248,7 +244,8 @@ function Documents() {
                     className="w-100 fw-bold"
                     style={{
                       borderRadius: "15px",
-                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      background:
+                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                       border: "none",
                       padding: "15px",
                     }}
@@ -271,7 +268,9 @@ function Documents() {
                     <div className="text-center mt-4 p-4 bg-success bg-opacity-10 rounded-3">
                       <div className="d-flex align-items-center justify-content-center gap-2 mb-3">
                         <CheckCircle size={20} className="text-success" />
-                        <span className="fw-bold text-success">Upload Successful!</span>
+                        <span className="fw-bold text-success">
+                          Upload Successful!
+                        </span>
                       </div>
 
                       <div className="mb-3">
@@ -335,6 +334,7 @@ function Documents() {
                   <th>#</th>
                   <th>Name</th>
                   <th>Uploaded At</th>
+                  <th>Link</th>
                 </tr>
               </thead>
               <tbody>
@@ -348,7 +348,11 @@ function Documents() {
                         : ""}
                     </td>
                     <td>
-                      <a href={fileItem.url} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={fileItem.downloadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         View File
                       </a>
                     </td>
