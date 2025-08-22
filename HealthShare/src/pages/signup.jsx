@@ -5,6 +5,26 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { useNavigate } from "react-router-dom";
+// import { v4 as uuidv4 } from "uuid";
+
+async function createRoleDoc(db, role, user) {
+  const roleCollection = role === "patient" ? "patients" : "doctors";
+
+  const ranid = Math.random().toString(36).slice(2, 8);
+
+
+  if (role === "patient") {
+    // just empty doc
+    await setDoc(doc(db, roleCollection, user.uid), {});
+  } else if (role === "doctor") {
+    // doctor gets a roomId: username + uuid
+    const roomId = ranid;
+    await setDoc(doc(db, roleCollection, user.uid), {
+      roomId: roomId,
+      createdAt: new Date(),
+    });
+  }
+}
 
 function Signup() {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -15,7 +35,6 @@ function Signup() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  // Auto redirect to login after showing error message
   useEffect(() => {
     if (errorMessage === 'User already exists') {
       const timer = setTimeout(() => {
@@ -28,15 +47,12 @@ function Signup() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    if (errorMessage) {
-      setErrorMessage('');
-    }
+    if (errorMessage) setErrorMessage('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (isSubmitting) return; // prevent double click
+    if (isSubmitting) return; 
     setIsSubmitting(true);
 
     if (form.password !== form.confirmPassword) {
@@ -46,9 +62,7 @@ function Signup() {
     }
 
     try {
-      // 🔍 Check if username or email already exists in Firestore
       const usersRef = collection(db, "users");
-
       const q1 = query(usersRef, where("username", "==", form.username));
       const q2 = query(usersRef, where("email", "==", form.email));
 
@@ -63,7 +77,6 @@ function Signup() {
         return;
       }
 
-      // ✅ Create Firebase Auth user
       const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
       const user = userCredential.user;
 
@@ -75,9 +88,8 @@ function Signup() {
         createdAt: serverTimestamp(),
       });
 
-      // Create empty role doc
-      const roleCollection = role === "patient" ? "patients" : "doctors";
-      await setDoc(doc(db, roleCollection, user.uid), {});
+      // ✅ Now call the helper function here
+      await createRoleDoc(db, role, user, form.username);
 
       navigate("/login");
     } catch (error) {
@@ -89,11 +101,9 @@ function Signup() {
       } else {
         setErrorMessage(error.message);
       }
-
-      setIsSubmitting(false); // re-enable button on error
+      setIsSubmitting(false);
     }
   };
-
   return (
     <Container className="d-flex justify-content-center align-items-center mt-5">
       <div
