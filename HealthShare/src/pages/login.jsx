@@ -56,13 +56,12 @@ function Login() {
         style={{
           width: "25rem",
           borderRadius: "1rem",
-          border: "1px solid #ccc",   // ✅ light grey border
-          boxShadow: "none",          // ✅ no shadow
+          border: "1px solid #ccc",   
+          boxShadow: "none",         
           WebkitBoxShadow: "none",
           MozBoxShadow: "none",
-          backgroundColor: "white"    // ✅ matches signup exactly     // ✅ solid white
-        }}
-      >
+          backgroundColor: "white"    
+        }}>
         <Card.Body>
           <h3 className="text-center mb-4">Login</h3>
 
