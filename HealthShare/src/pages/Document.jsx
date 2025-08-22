@@ -19,10 +19,9 @@ import { Upload, FileText, Image, CheckCircle } from "lucide-react";
 import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { getFirestore, doc, getDoc, serverTimestamp } from "firebase/firestore";
-import { updateDoc, arrayUnion } from "firebase/firestore";
-import { Timestamp } from "firebase/firestore";
 import { getPatientData } from "../HelperFuctions/GetAllPatientLinks";
+import { getFirestore, doc, updateDoc, arrayUnion, Timestamp } from "firebase/firestore";
+
 
 async function shortenWithTinyURL(longUrl) {
   const response = await axios.get(

@@ -2,6 +2,7 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { PDFDocument } = require("pdf-lib");
 const { v4: uuidv4 } = require("uuid");
+const axios = require("axios");
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -60,7 +61,18 @@ exports.mergePdfsAndGetSignedUrl = functions.https.onRequest(
         expires: expiresAt,
       });
 
-      return res.json({ url: signedUrl });
+      let shortUrl;
+      try {
+        const tinyResp = await axios.get(
+          `https://tinyurl.com/api-create.php?url=${encodeURIComponent(signedUrl)}`
+        );
+        shortUrl = tinyResp.data;
+      } catch (err) {
+        console.error("Error shortening URL:", err);
+        shortUrl = signedUrl; // fallback
+      }
+
+    return res.json({ url: shortUrl });
     } catch (err) {
       console.error("Error merging PDFs:", err);
       return res.status(500).json({ error: "Failed to merge PDFs" });
