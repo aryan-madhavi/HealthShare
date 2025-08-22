@@ -6,7 +6,8 @@ import { convertImageToPdf } from "../HelperFuctions/ConvertImagetoPdf";
 import { QRCodeSVG } from "qrcode.react";
 import { Upload, FileText, Image, CheckCircle } from "lucide-react";
 
-function Home() {
+
+function Documents() {
     const [url, setUrl] = useState("");
     const [file, setFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -47,6 +48,8 @@ function Home() {
                 fileToUpload = await convertImageToPdf(file);
             }
 
+            fileToUpload = await compressPdf(file);
+
             const baseName = removeExtension(fileToUpload.name);
             const storageRef = ref(storage, `${baseName}-${Date.now()}`);
 
@@ -78,14 +81,14 @@ function Home() {
 
     return (
         <div
-            className="min-vh-100 d-flex flex-column"
+            className="w-100 d-flex flex-column"
             style={{
                 background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                 fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
             }}
         >
             {/* Hero Section */}
-            <Container fluid className="py-5">
+            <Container fluid className="p-0">
                 <Row className="justify-content-center text-center text-white py-5">
                     <Col lg={8}>
                         <div className="mb-4">
@@ -244,4 +247,4 @@ function Home() {
     );
 }
 
-export default Home;
+export default Documents;

@@ -1,13 +1,13 @@
-#root {
+/* #root {
   max-width: 100%;
-  /* margin: 0 auto; */
+  /* margin: 0 auto; 
   padding: 2rem;
   text-align: center;
   width: 100%;
 }
 
 html, body, #root {
-  height: 100%;     /* makes the whole page fill the viewport */
+  height: 100%;     
   margin: 0;
   padding: 0;
 }
@@ -52,4 +52,4 @@ body {
 
 .read-the-docs {
   color: #888;
-}
+} */
