@@ -51,34 +51,28 @@ import { Link, Routes, Route } from "react-router-dom";
 // ===== Example Pages =====
 function Home() {
   return (
-    <div className="page-content">
-      <h1>Upload Your Files</h1>
-    </div>
+    <>
+    </>
   );
 }
 
 function Profile() {
   return (
-    <div className="page-content">
-      <h1>Profile Page</h1>
-      <p>This is the profile page content.</p>
-    </div>
+    <><Profile/>
   );
 }
 
 function Document() {
   return (
-    <div className="page-content">
-      <h1>Documents Page</h1>
-    </div>
+    <>
+    </>
   );
 }
 
 function ActiveLinks() {
   return (
-    <div className="page-content">
-      <h1>Active Links</h1>
-    </div>
+    <>
+    </>
   );
 }
 
