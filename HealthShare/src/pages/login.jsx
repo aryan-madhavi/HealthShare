@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Form, Button, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { auth, db } from "../firebase"; // 👈 your firebase.js
+import { auth, db } from "../firebase"; 
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
@@ -74,7 +74,7 @@ function Login() {
                 value={form.userInput}
                 onChange={handleChange}
                 placeholder="Enter email or username"
-                className="rounded p-2 border border-2" // ✅ neutral border
+                className="rounded p-2 border border-2" 
               />
             </Form.Group>
 
@@ -86,7 +86,7 @@ function Login() {
                 value={form.password}
                 onChange={handleChange}
                 placeholder="Enter password"
-                className="rounded p-2 border border-2" // ✅ neutral border
+                className="rounded p-2 border border-2" 
               />
             </Form.Group>
 

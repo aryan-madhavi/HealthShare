@@ -9,7 +9,7 @@ import { Upload, FileText, Image, CheckCircle } from "lucide-react";
 import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { updateDoc, arrayUnion } from "firebase/firestore";
 
 function Documents() {
@@ -43,7 +43,7 @@ function Documents() {
         const docSnap = await getDoc(patientDocRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setUploadedDocs(data.files || []);   // 👈 use files instead of uploadedDocs
+          setUploadedDocs(data.files || []);
           setActiveLinks(data.activeLinks || []);
         }
 
@@ -134,17 +134,19 @@ function Documents() {
             const fileUrl = response.data.url;
             setUrl(fileUrl);
 
-            // ✅ Update Firestore
             const userDocRef = doc(db, "patients", uid);
 
             await updateDoc(userDocRef, {
               files: arrayUnion({
                 name: baseName,
                 url: fileUrl,
-                uploadedAt: new Date(),
+                uploadedAt: new Date(), // ✅ replace with client timestamp
+              }),
+              activated: arrayUnion({
+                activatedAt: new Date(), // ✅ Firestore won't accept serverTimestamp() here
+                url: fileUrl,
               }),
             });
-
             setIsUploading(false);
           } catch (err) {
             console.error("Firestore update failed", err);
