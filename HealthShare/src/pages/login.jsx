@@ -22,7 +22,7 @@ function Login() {
     try {
       let email = form.userInput;
 
-      // 1️⃣ If input is not an email, treat it as username → fetch from Firestore
+      // If input is not an email, treat it as username → fetch from Firestore
       if (!email.includes("@")) {
         const q = query(collection(db, "users"), where("username", "==", form.userInput));
         const querySnap = await getDocs(q);
@@ -33,7 +33,7 @@ function Login() {
         email = querySnap.docs[0].data().email;
       }
 
-      // 2️⃣ Sign in with Firebase Auth
+      //  Sign in with Firebase Auth
       const userCredential = await signInWithEmailAndPassword(auth, email, form.password);
       const user = userCredential.user;
 
@@ -50,7 +50,7 @@ function Login() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-white">
+    <div className="d-flex justify-content-center align-items-center vh-100">
       <Card
         className="p-4"
         style={{
@@ -60,7 +60,7 @@ function Login() {
           boxShadow: "none",          // ✅ no shadow
           WebkitBoxShadow: "none",
           MozBoxShadow: "none",
-          backgroundColor: "#fff"     // ✅ solid white
+          backgroundColor: "white"    // ✅ matches signup exactly     // ✅ solid white
         }}
       >
         <Card.Body>

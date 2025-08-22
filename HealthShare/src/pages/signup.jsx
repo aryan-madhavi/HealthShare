@@ -1,28 +1,44 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, ToggleButton, ButtonGroup, Container } from 'react-bootstrap';
 import { Eye, EyeSlash } from 'react-bootstrap-icons';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
-import { useNavigate } from "react-router-dom";   // ✅ needed for navigation
+import { useNavigate } from "react-router-dom";
 
 function Signup() {
   const [passwordShown, setPasswordShown] = useState(false);
   const [confirmPasswordShown, setConfirmPasswordShown] = useState(false);
   const [role, setRole] = useState('patient');
   const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' });
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
+
+  // Auto redirect to login after showing error message
+  useEffect(() => {
+    if (errorMessage === 'User already exists') {
+      const timer = setTimeout(() => {
+        navigate("/");
+      }, 2000); // Redirect after 2 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage, navigate]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    // Clear error message when user starts typing
+    if (errorMessage) {
+      setErrorMessage('');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (form.password !== form.confirmPassword) {
-      alert("Passwords do not match!");
+      setErrorMessage("Passwords do not match!");
       return;
     }
 
@@ -40,11 +56,17 @@ function Signup() {
       const roleCollection = role === "patient" ? "patients" : "doctors";
       await setDoc(doc(db, roleCollection, user.uid), {}); // empty doc
 
-      alert(`Signup successful! User added to "users" and empty doc created in "${roleCollection}".`);
-      navigate("/"); // ✅ redirect to login
+      // Success - new user created, redirect to login
+      navigate("/");
     } catch (error) {
       console.error("Error signing up:", error);
-      alert(error.message);
+      
+      // Handle specific Firebase auth errors
+      if (error.code === 'auth/email-already-in-use') {
+        setErrorMessage('User already exists');
+      } else {
+        setErrorMessage(error.message);
+      }
     }
   };
 
@@ -54,7 +76,7 @@ function Signup() {
         style={{
           width: "25rem",
           padding: "2rem",
-          border: "1px solid #ccc",   // ✅ border like login page
+          border: "1px solid #ccc",
           borderRadius: "8px",
           backgroundColor: "white",
           boxShadow: "none"
@@ -167,6 +189,20 @@ function Signup() {
               </Button>
             </div>
           </Form.Group>
+
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="mb-3 text-center text-danger">
+              <small>
+                {errorMessage}
+                {errorMessage === 'User already exists' && (
+                  <span className="d-block mt-1" style={{ fontSize: '0.75rem' }}>
+                    Redirecting to login...
+                  </span>
+                )}
+              </small>
+            </div>
+          )}
 
           {/* Submit */}
           <Button
