@@ -1,22 +1,34 @@
 import { useEffect, useState } from "react";
-import { Card, Table, Button, Form } from "react-bootstrap";
+import { Card, Table, Button, Form, Modal } from "react-bootstrap";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { getPatientData } from "../HelperFuctions/GetAllPatientLinks";
 import axios from "axios";
+import { QRCodeSVG } from "qrcode.react";
+import {
+  FacebookShareButton,
+  WhatsappShareButton,
+  EmailShareButton,
+  FacebookIcon,
+  WhatsappIcon,
+  EmailIcon,
+} from "react-share";
 
 function ActiveLinks() {
     const auth = getAuth();
     const db = getFirestore();
     const functions = getFunctions(); // initialize cloud functions
 
+    const [shareUrl, setShareUrl] = useState("");
+    const [showModal, setShowModal] = useState(false);
     const [uploadedDocs, setUploadedDocs] = useState([]);
     const [selectedFileIds, setSelectedFileIds] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
     const [shareUrls, setShareUrls] = useState([]);
-
+    const [copied, setCopied] = useState(false);
+    
     useEffect(() => {
         const fetchPatientData = async () => {
             if (!auth.currentUser) return;
@@ -61,11 +73,11 @@ function ActiveLinks() {
                 { filePaths, uid: auth.currentUser.uid }
             );
 
-            console.log("Signed URLs response:", response.data);
-
             if (response.data && response.data.url) {
-                setShareUrls([response.data.url]);
-                alert("Sharable link generated!");
+                setShareUrl(response.data.url); // assume function returns { url: "..." }
+                setShowModal(true);
+
+                // alert("Sharable link generated!");
             } else {
                 alert("No URL returned from function.");
             }
@@ -78,9 +90,73 @@ function ActiveLinks() {
 
 
     return (
+    <>
+        <Modal show={showModal} onHide={() => setShowModal(false)} centered onEntered={() => navigator.clipboard.writeText(shareUrl)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Share Link</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          {shareUrl && (
+            <>
+              <p className="mb-2">
+                <a href={shareUrl} target="_blank" rel="noopener noreferrer">
+                    {shareUrl}
+                </a>
+                {/* <i
+                    className="bi bi-clipboard"
+                    style={{ cursor: "pointer", marginLeft: "8px" }}
+                    onClick={() => {
+                    navigator.clipboard.writeText(shareUrl);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000); // hide after 2 seconds
+                    }}
+                ></i> */}
+               {copied && <span style={{ marginLeft: "8px", color: "green" }}>Copied!</span>}
+                </p>
+              <QRCodeSVG
+                          value={shareUrl}
+                          size={150}
+                          style={{
+                            padding: "10px",
+                            background: "white",
+                            borderRadius: "10px",
+                          }}
+                        />
+              <div className="d-flex justify-content-center gap-2 mt-3">
+                <FacebookShareButton url={shareUrl}>
+                  <FacebookIcon size={40} round />
+                </FacebookShareButton>
+                <WhatsappShareButton url={shareUrl}>
+                  <WhatsappIcon size={40} round />
+                </WhatsappShareButton>
+                <EmailShareButton url={shareUrl}>
+                  <EmailIcon size={40} round />
+                </EmailShareButton>
+              </div>
+               <Button
+                className="mt-3"
+                 onClick={() => {
+                    navigator.clipboard.writeText(shareUrl);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000); // hide after 2 seconds
+                    }}
+              >
+                Copy Link
+              </Button>
+            </>
+          )}
+        </Modal.Body>
+      </Modal>
+
         <Card className="shadow-sm m-4">
-            <Card.Header>
+          <Card.Header className="d-flex justify-content-between align-items-center">
                 <h5 className="mb-0">Shareable Links</h5>
+                <Button
+                onClick={handleShare}
+                disabled={!selectedFileIds.length || processing}
+                >
+                {processing ? "Generating Links..." : "Share Selected Files"}
+                </Button>
             </Card.Header>
             <Card.Body>
                 {loading ? (
@@ -132,13 +208,7 @@ function ActiveLinks() {
                             </tbody>
                         </Table>
 
-                        <Button
-                            className="mt-3"
-                            onClick={handleShare}
-                            disabled={!selectedFileIds.length || processing}
-                        >
-                            {processing ? "Generating Links..." : "Share Selected Files"}
-                        </Button>
+                       
 
                         {shareUrls.length > 0 && (
                             <div className="mt-3">
@@ -158,6 +228,7 @@ function ActiveLinks() {
                 )}
             </Card.Body>
         </Card>
+    </>
     );
 }
 
