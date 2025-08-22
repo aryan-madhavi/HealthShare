@@ -20,8 +20,18 @@ function Layout() {
         
 
         {/* Main content */}
-        <div className="flex-grow-1 overflow-hidden p-3">
-          <Outlet />
+        <div 
+          className="flex-grow-1 p-3"
+          style={{
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            maxHeight: '100%',
+            scrollBehavior: 'smooth'
+          }}
+        >
+          <div style={{ minHeight: 'fit-content' }}>
+            <Outlet />
+          </div>
         </div>
       </div>
     </>
