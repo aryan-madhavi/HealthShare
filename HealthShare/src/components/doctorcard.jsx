@@ -11,7 +11,7 @@ function DoctorCard() {
 
   // Generate a random Room ID
   const generateRoomId = () => {
-    return Math.random().toString(36).substr(2, 9); // short random string
+    return Math.random().toString(36).substr(2, 9); 
   };
 
   // Fetch existing room

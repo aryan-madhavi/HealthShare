@@ -29,7 +29,7 @@ function Patients() {
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        setStatus("Room not found ❌");
+        setStatus("Room not found ");
         return;
       }
 
@@ -40,7 +40,7 @@ function Patients() {
         joinedAt: new Date(),
       });
 
-      setStatus("✅ Successfully joined room: " + roomId);
+      setStatus(" Successfully joined room: " + roomId);
     } catch (err) {
       console.error("Error joining room:", err);
       setStatus("Error joining room");

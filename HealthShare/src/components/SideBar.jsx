@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Nav, Navbar, Offcanvas, Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { GiHamburgerMenu } from "react-icons/gi";  // <-- import added
+import { GiHamburgerMenu } from "react-icons/gi"; 
 import logo from "../assets/logo.png";
 
 function TopNavbar({ role }) {
@@ -26,7 +26,7 @@ function TopNavbar({ role }) {
 
   // Detect window resize to check if mobile
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 992); // bootstrap lg breakpoint
+    const handleResize = () => setIsMobile(window.innerWidth < 992); 
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -41,7 +41,10 @@ function TopNavbar({ role }) {
         className="px-3 shadow d-flex align-items-center"
         style={{ backgroundColor: "#181145c2" }}
       >
-        <Navbar.Brand className="fw-bold text-white">HealthShare</Navbar.Brand>
+        <Navbar.Brand className="fw-bold text-white"> 
+          <img src='../assets/logo.png' alt="HealthShare" />
+          HealthShare
+          </Navbar.Brand>
 
         {/* Toggle button for mobile */}
         {isMobile && (

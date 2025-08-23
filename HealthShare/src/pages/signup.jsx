@@ -88,7 +88,6 @@ function Signup() {
         createdAt: serverTimestamp(),
       });
 
-      // ✅ Now call the helper function here
       await createRoleDoc(db, role, user, form.username);
 
       navigate("/login");

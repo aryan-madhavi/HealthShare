@@ -15,7 +15,7 @@ export async function generateSignedUrl(uid, filePath) {
   if (!uid || !filePath) return null;
 
   try {
-    // 1️⃣ Call Cloud Function to get signed URL
+  
     const response = await axios.get(
       "https://getsignedurl-y3rvr64ywq-uc.a.run.app",
       { params: { filePath } }
@@ -23,10 +23,10 @@ export async function generateSignedUrl(uid, filePath) {
 
     const signedUrl = response.data.url;
 
-    // 2️⃣ Shorten the URL using TinyURL
+  
     const shortUrl = await shortenWithTinyURL(signedUrl);
 
-    // 3️⃣ Update Firestore with activated URL
+  
     const userDocRef = doc(db, "patients", uid);
     await updateDoc(userDocRef, {
       activated: arrayUnion({
@@ -35,7 +35,7 @@ export async function generateSignedUrl(uid, filePath) {
       }),
     });
 
-    // 4️⃣ Return the final short URL
+ 
     return shortUrl;
   } catch (err) {
     console.error("Error generating signed URL:", err);

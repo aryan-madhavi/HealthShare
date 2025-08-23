@@ -127,7 +127,7 @@ function Documents() {
         },
         async () => {
           try {
-            // ✅ Update Firestore
+            
             const userDocRef = doc(db, "patients", uid);
 
             await updateDoc(userDocRef, {

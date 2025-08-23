@@ -44,11 +44,11 @@ export default function ActiveLinks() {
                   return {
                     id: doc.id,
                     ...data,
-                    downloadURL, // 🔑 actual working URL
+                    downloadURL, 
                   };
                 } catch (err) {
                   console.error("Error getting file URL:", err);
-                  return null; // skip if error
+                  return null; 
                 }
               }
               return null;
@@ -95,7 +95,7 @@ export default function ActiveLinks() {
                 <td>{new Date(link.expiresAt).toLocaleString()}</td>
                 <td>
                   <a
-                    href={link.downloadURL} // ✅ actual download URL
+                    href={link.downloadURL} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-sm btn-primary"
