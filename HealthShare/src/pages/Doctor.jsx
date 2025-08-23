@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Card, Table, Button, Modal } from "react-bootstrap";
+import { Card, Table, Button, Spinner, Modal } from "react-bootstrap";
 import { getAuth } from "firebase/auth";
-import axios from "axios";
+import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { QRCodeSVG } from "qrcode.react";
 import {
   FacebookShareButton,
@@ -11,34 +12,91 @@ import {
   WhatsappIcon,
   EmailIcon,
 } from "react-share";
+import axios from "axios";
 import { fetchDoctorInvites } from "../HelperFuctions/DoctoreInvites";
 
-function DoctorInviteShare() {
-  const auth = getAuth();
-  const [showModal, setShowModal] = useState(false);
-  const [inviteUrl, setInviteUrl] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [invites, setInvites] = useState([]);
 
-  // Fetch invites on component mount
-  const fetchInvites = async () => {
-    if (!auth.currentUser) return;
-    setLoading(true);
-    try {
-      const data = await fetchDoctorInvites(auth.currentUser.uid);
-      setInvites(data);
-    } catch (err) {
-      console.error("Error fetching invites:", err);
-      alert("Failed to fetch invites.");
-    }
-    setLoading(false);
-  };
+function DoctorParticipantDocs() {
+  const auth = getAuth();
+  const db = getFirestore();
+  const storage = getStorage();
+
+  const [loading, setLoading] = useState(true);
+  const [docs, setDocs] = useState([]);
+  const [inviteUrl, setInviteUrl] = useState("");
+const [showModal, setShowModal] = useState(false);
+const [copied, setCopied] = useState(false);
+const [processing, setProcessing] = useState(false);
+
 
   useEffect(() => {
-    fetchInvites();
+    const fetchParticipantDocs = async () => {
+      if (!auth.currentUser) return;
+      setLoading(true);
+
+      try {
+        const doctorUid = auth.currentUser.uid;
+        const docRef = doc(db, "doctors", doctorUid);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+          console.log("Doctor not found!");
+          setDocs([]);
+          setLoading(false);
+          return;
+        }
+
+        const participants = docSnap.data().participants || [];
+        let allDocs = [];
+
+        for (const participant of participants) {
+          const participantUid = typeof participant === "string" ? participant : participant.uid;
+
+          const q = query(
+            collection(db, "mergedPdfs"),
+            where("uid", "==", participantUid)
+          );
+
+          const querySnapshot = await getDocs(q);
+          const now = Date.now();
+
+          const participantDocs = await Promise.all(
+            querySnapshot.docs.map(async (d) => {
+              const data = d.data();
+              if (data.expiresAt > now) {
+                try {
+                  const downloadURL = await getDownloadURL(ref(storage, data.filePath));
+                  return {
+                    participantUid,
+                    docId: d.id,
+                    ...data,
+                    downloadURL,
+                  };
+                } catch (err) {
+                  console.error("Error getting download URL:", err);
+                  return null;
+                }
+              }
+              return null;
+            })
+          );
+
+          allDocs.push(...participantDocs.filter(Boolean));
+        }
+
+        setDocs(allDocs);
+      } catch (err) {
+        console.error("Error fetching participant docs:", err);
+        setDocs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchParticipantDocs();
   }, [auth.currentUser]);
+
+
 
   const handleGenerateInvite = async () => {
     if (!auth.currentUser) return;
@@ -53,8 +111,7 @@ function DoctorInviteShare() {
         setInviteUrl(response.data.shortUrl);
         setShowModal(true);
 
-        // Refresh invites after generating a new one
-        fetchInvites();
+        // await fetchParticipantDocs();
       } else {
         alert("No invite URL returned from API.");
       }
@@ -65,9 +122,10 @@ function DoctorInviteShare() {
     setProcessing(false);
   };
 
+
   return (
     <>
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+    <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Invite Link</Modal.Title>
         </Modal.Header>
@@ -116,52 +174,63 @@ function DoctorInviteShare() {
         </Modal.Body>
       </Modal>
 
-      <Card className="shadow-sm m-4">
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <h5 className="mb-0">Shareable Links</h5>
+
+    <Card className="m-4 shadow-sm">
+      <Card.Header className="d-flex justify-content-between align-items-center">
+          <h5 className="mb-0">Patients Documents</h5>
           <Button onClick={handleGenerateInvite} disabled={processing}>
             {processing ? "Generating Invite..." : "Generate Invite"}
           </Button>
         </Card.Header>
-        <Card.Body>
-          {loading ? (
-            <p className="text-muted">Loading...</p>
-          ) : invites.length === 0 ? (
-            <p className="text-muted">No invites generated yet.</p>
-          ) : (
-            <Table striped bordered hover responsive>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Invite ID</th>
-                  <th>Link</th>
-                  <th>Expires At</th>
+      <Card.Body>
+        {loading ? (
+          <div className="text-center">
+            <Spinner animation="border" />
+            <p>Loading documents...</p>
+          </div>
+        ) : docs.length === 0 ? (
+          <p>No active documents found for participants.</p>
+        ) : (
+          <Table striped bordered hover responsive>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Participant UID</th>
+                <th>Document ID</th>
+                <th>Link</th>
+                <th>Expires At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {docs.map((docItem, idx) => (
+               <tr key={`${docItem.participantUid}_${docItem.docId}_${idx}`}>
+                  <td>{idx + 1}</td>
+                  <td>{docItem.participantUid}</td>
+                  <td>{docItem.docId}</td>
+                  <td>
+                    <a
+                      href={docItem.downloadURL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ textDecoration: "underline", color: "#007bff" }}
+                    >
+                      Click Here
+                    </a>
+                  </td>
+                  <td>
+                    {docItem.expiresAt?.toDate
+                      ? docItem.expiresAt.toDate().toLocaleString()
+                      : new Date(docItem.expiresAt).toLocaleString()}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {invites.map((invite, idx) => (
-                  <tr key={invite.inviteId}>
-                    <td>{idx + 1}</td>
-                    <td>{invite.inviteId}</td>
-                    <td>
-                      <a href={invite.inviteUrl} target="_blank" rel="noopener noreferrer">
-                        {invite.inviteUrl}
-                      </a>
-                    </td>
-                    <td>
-                      {invite.expiresAt?.toDate
-                        ? invite.expiresAt.toDate().toLocaleString()
-                        : new Date(invite.expiresAt).toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </Card.Body>
-      </Card>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </Card.Body>
+    </Card>
     </>
   );
 }
 
-export default DoctorInviteShare;
+export default DoctorParticipantDocs;

@@ -14,9 +14,11 @@ function TopNavbar({ role }) {
       { path: "/document", label: "My Documents" },
       { path: "/activelinks", label: "Active Links" },
       { path: "/profile", label: "Profile" },
+      // {path: "/room", label: "Join Room" }
     ],
     doctor: [
       { path: "/doctor", label: "Home" },
+      // {path: "/room", label: "Create or Join Room" }
     ],
   };
 

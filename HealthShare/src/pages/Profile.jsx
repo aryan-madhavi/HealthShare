@@ -98,10 +98,10 @@
 // export default Profile;
 
 import { useEffect, useState } from "react";
-import { Container, Row, Col, Card, Button, Modal, Form} from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Modal, Form } from "react-bootstrap";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, Legend,ResponsiveContainer } from "recharts";
 import axios from "axios";
 
 function Profile() {
@@ -139,6 +139,7 @@ function Profile() {
     // Reset input and close modal
     setInputValue("");
     setShowModal(false);
+    alert("Request sent successfully!");
   } catch (err) {
     console.error("Error sending request:", err);
     alert("Failed to send request. Make sure the URL is correct.");
@@ -222,9 +223,15 @@ function Profile() {
             </h2>
           </Card>
           <div className="mt-3 text-center">
-            <Button variant="primary" onClick={() => setShowModal(true)}>
+
+           <Button
+              style={{ backgroundColor: "#2e3e8eff", borderColor: "#a491e0ff", color: "white" }}
+              size="lg"
+              onClick={() => setShowModal(true)}
+            >
               Join Doctor
             </Button>
+
           </div>
         </Col>
 
@@ -278,7 +285,7 @@ function Profile() {
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Add Document</Modal.Title>
+          <Modal.Title>Connect With Doctor</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
@@ -286,7 +293,7 @@ function Profile() {
               <Form.Label>Enter URL</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="Document name"
+                placeholder="url goes here"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 required
