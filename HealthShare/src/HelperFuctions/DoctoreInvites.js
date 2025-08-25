@@ -40,11 +40,11 @@ export async function fetchDoctorInvites(uid) {
                       return {
                         id: doc.id,
                         ...data,
-                        downloadURL, // 🔑 actual working URL
+                        downloadURL, 
                       };
                     } catch (err) {
                       console.error("Error getting file URL:", err);
-                      return null; // skip if error
+                      return null; 
                     }
                   }
                   return null;

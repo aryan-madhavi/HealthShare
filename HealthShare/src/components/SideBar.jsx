@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Nav, Navbar, Offcanvas, Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { GiHamburgerMenu } from "react-icons/gi";  // <-- import added
+import { GiHamburgerMenu } from "react-icons/gi"; 
 import logo from "../assets/logo.png";
 
 function TopNavbar({ role }) {
@@ -26,7 +26,7 @@ function TopNavbar({ role }) {
 
   // Detect window resize to check if mobile
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 992); // bootstrap lg breakpoint
+    const handleResize = () => setIsMobile(window.innerWidth < 992); 
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
