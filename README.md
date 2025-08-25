@@ -72,10 +72,10 @@ React Frontend → Firebase Auth → Firestore + Cloud Storage → Cloud Functio
 - Integration with IoT/wearables
 - Compliance with global standards (FHIR, HL7)
 ## 🤝 Contributors
-- @riddhikale 
-- @Sankalp-Dawada
-- @aryan-madhavi
-- @sahilgangani17
+- [Riddhi Kale](https://github.com/riddhikale) 
+- [Sankalp Dawada](https://github.com/Sankalp-Dawada)
+- [Aryan Madhavi](https://github.com/aryan-madhavi)
+- [Sahil Gangani](https://github.com/sahilgangani17)
   
 ## Run Locally
 
