@@ -41,7 +41,9 @@ function TopNavbar({ role }) {
         className="px-3 shadow d-flex align-items-center"
         style={{ backgroundColor: "#181145c2" }}
       >
-        <Navbar.Brand className="fw-bold text-white">HealthShare</Navbar.Brand>
+        <Navbar.Brand className="fw-bold text-white">
+          <img src={logo} alt="Logo" style={{ height: '40px', marginRight: '10px' }} />
+          HealthShare</Navbar.Brand>
 
         {/* Toggle button for mobile */}
         {isMobile && (
