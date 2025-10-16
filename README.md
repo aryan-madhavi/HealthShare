@@ -1,5 +1,5 @@
 
-  # HealthLock
+  # HealthShare
 
   DLT-Based Platform for Secure & Controlled Medical Record Sharing
 

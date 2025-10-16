@@ -120,7 +120,7 @@ export function QRScanner({ isOpen, onClose, onSuccess }: QRScannerProps) {
               <div className="text-sm text-muted-foreground space-y-2">
                 <div className="font-medium">How to scan:</div>
                 <ul className="space-y-1 ml-4">
-                  <li>• Ask the patient to show their HealthLock QR code</li>
+                  <li>• Ask the patient to show their HealthShare QR code</li>
                   <li>• Point your camera at the QR code</li>
                   <li>• Keep the code within the frame</li>
                   <li>• Wait for automatic recognition</li>

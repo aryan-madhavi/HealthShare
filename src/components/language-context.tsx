@@ -13,7 +13,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const translations = {
   en: {
     // General
-    "app.title": "HealthLock",
+    "app.title": "HealthShare",
     "app.tagline": "Encrypt. Share. Revoke. Trust.",
     "language.toggle": "हिंदी",
     "continue": "Continue",
@@ -33,7 +33,7 @@ const translations = {
     "logout": "Logout",
     
     // Onboarding
-    "onboarding.welcome": "Welcome to HealthLock",
+    "onboarding.welcome": "Welcome to HealthShare",
     "onboarding.description": "Securely share your health records with trusted healthcare providers",
     "onboarding.get_started": "Get Started",
     "auth.mobile": "Mobile Number",
